@@ -36,8 +36,8 @@ payment_amount_max = 99999
 
 [bot]
 # Telegram Bot 管理员ID，必须设置，否则无法使用
-admin_id = 7768827937
+admin_id = 123456
 # Telegram 群组ID，设置之后机器人会将交易消息会推送到此群
 group_id = ""
 # Telegram Bot Token，必须设置，否则无法使用
-token = "7450924259:AAFDCXTU5UFRBBh4RGCKnfVYxAfYmsv3Zu8"
+token = ""
