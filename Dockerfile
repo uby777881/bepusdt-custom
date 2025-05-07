@@ -1,30 +1,23 @@
-# Use a minimal Ubuntu base image
-FROM ubuntu:latest
+FROM golang:1.23.2-alpine3.20 AS builder
 
-# Set the working directory inside the container
-WORKDIR /app
+ENV GO111MODULE=on
+WORKDIR /go/release
+ADD . .
+RUN set -x \
+    && CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -buildid=" -o bepusdt ./main
 
-# Install CA certificates and other required dependencies
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    libc6 \
-    tzdata \
-    && rm -rf /var/lib/apt/lists/*
+FROM alpine:3.20
 
-# Copy the binary into the container
-COPY bepusdt-linux-amd64 /app/bepusdt
+ENV TZ=Asia/Shanghai
 
-# Copy the config file into the container
-COPY conf.toml /app/conf.toml
+# 安装所需的依赖
+RUN apk add --no-cache tzdata ca-certificates
 
-# Make sure the binary is executable
-RUN chmod +x /app/bepusdt
+COPY --from=builder /go/release/bepusdt /usr/local/bin/bepusdt
 
-# Set the timezone if needed (optional)
+# 设置时区
 RUN ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
-# Expose the port that the app uses (8080)
 EXPOSE 8080
-
-# Run the binary with the config file when the container starts
-CMD ["/app/bepusdt", "-conf", "/app/conf.toml"]
+ENTRYPOINT ["bepusdt"]
+CMD ["-conf", "/usr/local/bepusdt/conf.toml"]
